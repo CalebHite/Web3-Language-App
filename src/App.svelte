@@ -1,150 +1,149 @@
 <script>
-    import { onMount } from "svelte";
-    import { connectWallet, connectContract, createFundraiser, donate, startQuadraticFunding, getFundraisers, removeFundraiser } from "./web3";
+    import { onMount } from 'svelte';
+    import {
+      connectWallet,
+      connectContract,
+      deposit,
+      recordProgress,
+      forfeitStreak,
+      distributePool,
+      startConversation,
+      sendMessage,
+    } from './web3.js';
 
-    let fundraisers = [];
-    let fundraiserName = "";
-    let fundraiserAddress = "";
-    let selectedFundraiser = "";
-    let donationAmount = "";
-    let selectedFundraiserId = 0;
-
-    let page = "";
-
+  
+    let walletConnected = false;
+    let streakGoal = '';
+    let depositAmount = '';
+    let distributionAddress = '';
+    let distributionAmount = '';
+    let startLearn = false;
+    let message = '';
+    let language = 'German';
+    let result = '';
+    let messageCount = 5;
+  
     onMount(async () => {
-        try {
-            await connectContract();
-            await connectWallet();
-            fundraisers = await getFundraisers();
-        } catch(err){
-            console.log(err);
-        }
+      try {
+        await connectWallet();
+        await connectContract();
+        walletConnected = true;
+      } catch (error) {
+        console.error('Error connecting wallet or contract:', error);
+      }
     });
-
-    async function handleCreateFundraiser() {
-        try {
-            await createFundraiser(fundraiserName);
-            fundraisers = await getFundraisers();
-            fundraiserName = "";
-        } catch (error) {
-            console.error("Failed to create fundraiser:", error);
-        }
+  
+    async function handleDeposit() {
+      try {
+        await deposit(streakGoal, depositAmount);
+        alert('Deposit successful!');
+      } catch (error) {
+        alert('Failed to deposit: ' + error.message);
+      }
+    }
+  
+    async function handleRecordProgress() {
+      try {
+        await recordProgress();
+        alert('Progress recorded successfully!');
+      } catch (error) {
+        alert('Failed to record progress: ' + error.message);
+      }
     }
 
-    async function handleDonate() {
-        try {
-            await donate(selectedFundraiserId, donationAmount);
-            fundraisers = await getFundraisers();
-            donationAmount = "";
-        } catch (error) {
-            console.error("Failed to donate:", error);
-        }
+    async function learn(){
+      startLearn = true;
+      await startConversation(language);
     }
 
-    async function handleStartQuadraticFunding() {
-        try {
-            await startQuadraticFunding(selectedFundraiserId);
-        } catch (error) {
-            console.error("Failed to start quadratic funding:", error);
-        }
+    async function handleMessaging(){
+      result = await sendMessage(message);
+      messageCount--;
     }
-
-    async function handleRemoveFundraiser() {
-        try {
-            console.log("Removing fundraiser with ID:", selectedFundraiserId);
-            await removeFundraiser(selectedFundraiserId);
-            fundraisers = await getFundraisers();
-            selectedFundraiserId = 0; // Reset selection
-        } catch (error) {
-            console.error("Failed to remove fundraiser:", error);
-        }
+  
+    async function handleForfeitStreak() {
+      try {
+        await forfeitStreak();
+        alert('Streak forfeited successfully!');
+      } catch (error) {
+        alert('Failed to forfeit streak: ' + error.message);
+      }
     }
-</script>
+  
+    async function handleDistributePool() {
+      try {
+        await distributePool(distributionAddress, distributionAmount);
+        alert('Pool distributed successfully!');
+      } catch (error) {
+        alert('Failed to distribute pool: ' + error.message);
+      }
+    }
+  </script>
+  
+  <main>
+    <h1>Language Learning App</h1>
+  
+    {#if walletConnected}
+      <section>
+        <h2>Start a New Streak</h2>
+        <label>
+          Streak Goal (days):
+          <input type="number" bind:value={streakGoal} min="1" />
+        </label>
+        <label>
+          Deposit Amount (ETH):
+          <input type="text" bind:value={depositAmount} />
+        </label>
+        <button on:click={handleDeposit}>Start Streak</button>
+      </section>
+  
+      <section>
+        <h2>Daily Actions</h2>
+        <button on:click={learn}>Learn to Continue Streak!</button>
+      </section>
 
-<main>
-    <h1 id="title">Crowdblock</h1>
-        <button on:click={()=>{
-            page = "donate";
-        }}>
-            Donate
-        </button>
-        <button on:click={()=>{
-            page = "create";
-        }}>
-            Create
-        </button>
-    { #if page == "donate"}
+      {#if startLearn}
         <section>
-            <h2>Select Fundraiser:</h2>
-            <select bind:value={selectedFundraiser} name="" id="">
-                {#each fundraisers as fundraiser, index}
-                    <option on:click={ ()=>{
-                        selectedFundraiserId = index;
-                    }} value={index}>{fundraiser.name}</option>
-                {/each}
-            </select>
+          <h2>{messageCount} Reponses Left!</h2>
+          <input type="text" name="word" id="word" bind:value={message}>
+          <button on:click={()=>{handleMessaging(); console.log(messageCount)}}>Enter</button>
+          <p>{result}</p>
         </section>
-        <section>
-            <h2>Donate Directly</h2>
-            $<input bind:value={donationAmount} placeholder="Amount in ETH" />
-            <button on:click={handleDonate}>Donate</button>
-        </section>
-        <section>
-            <h2>Start Quadratic Funding</h2>
-            <button id="start" on:click={handleStartQuadraticFunding}>Start</button>
-        </section>
-    { /if}
-
-    { #if page == "create"}
-        <section>
-            <h2>Create Fundraiser</h2>
-            <input bind:value={fundraiserName} placeholder="Fundraiser Name" />
-            <input bind:value={fundraiserAddress} placeholder="Fundraiser Address" />
-            <br>
-            <button on:click={handleCreateFundraiser}>Create</button>
-        </section>
-    { /if}
-</main>
-
-<style>
+      {/if}
+    {:else}
+      <p>Please connect your wallet to get started.</p>
+    {/if}
+  </main>
+  
+  <style>
     main {
-        background: #151b29;
-        color: whitesmoke; 
-        padding: 2rem;
-        width: 100%;
-        height: 60rem;
-        text-align: center;
-        align-items: center;
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
     }
-    
-    button:hover{
-        background: #72d4a1;
-    }
-
-    #title{
-        font-size: 4rem;
-        color: #72d4a1;
-    }
-
+  
     section {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        background: #2a3652;
-        width: 25rem;
-        padding: 1rem 0 1rem 0;
-        border-radius: .5rem;
-        margin-left: 37%;
+      margin-bottom: 20px;
     }
-
-    input {
-        margin-right: 1rem;
+  
+    label {
+      display: block;
+      margin-bottom: 10px;
     }
-
-    select {
-        margin-right: 1rem;
+  
+    button {
+      display: block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
     }
-
-    #start{
-        width: 25%;
+  
+    button:hover {
+      background-color: #0056b3;
     }
-</style>
+  </style>
+  

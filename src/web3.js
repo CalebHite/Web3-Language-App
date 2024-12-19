@@ -1,233 +1,132 @@
 import { ethers } from "ethers";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI("AIzaSyChASsVBWmAfZjm3AscwnEmFqrlFWv87NY");
+const model = genAI.getGenerativeModel({ 
+	model: "gemini-1.5-flash",
+	systemInstruction: "Hold a conversation with the user with the intent of language learning. Include translations only for difficult words or phrases. Increase or decrease the complexity of responses based on the user's level of language."
+ });
 
 let provider;
 let signer;
 let contract;
 let accounts;
+let chat;
 
-const contractAddress = "0x4bbbc97a032e63b0045e2474e59062e6c0fb8163";
+const contractAddress = "Add real address here";
 const contractABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			}
-		],
-		"name": "createFundraiser",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_fundraiserId",
-				"type": "uint256"
-			}
-		],
-		"name": "donate",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "fundraiserId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "donor",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "DonationReceived",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "fundraiserId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "creator",
-				"type": "address"
-			}
-		],
-		"name": "FundraiserCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "fundraiserId",
-				"type": "uint256"
-			}
-		],
-		"name": "FundraiserRemoved",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "fundraiserId",
-				"type": "uint256"
-			}
-		],
-		"name": "QuadraticFundingStarted",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_fundraiserId",
-				"type": "uint256"
-			}
-		],
-		"name": "removeFundraiser",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_fundraiserId",
-				"type": "uint256"
-			}
-		],
-		"name": "startQuadraticFunding",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "donations",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "fundraisers",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "address payable",
-				"name": "creator",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalDonations",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "donationCount",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getFundraisers",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "string",
-						"name": "name",
-						"type": "string"
-					},
-					{
-						"internalType": "address payable",
-						"name": "creator",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalDonations",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "donationCount",
-						"type": "uint256"
-					}
-				],
-				"internalType": "struct FundraisingApp.Fundraiser[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "streakGoal",
+                "type": "uint256"
+            }
+        ],
+        "name": "deposit",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "recordProgress",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "forfeitStreak",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "distributePool",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "streakGoal",
+                "type": "uint256"
+            }
+        ],
+        "name": "Deposit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "reward",
+                "type": "uint256"
+            }
+        ],
+        "name": "StreakCompleted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "forfeitedAmount",
+                "type": "uint256"
+            }
+        ],
+        "name": "StreakFailed",
+        "type": "event"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive"
+    }
 ];
 
 export async function connectWallet() {
@@ -237,50 +136,68 @@ export async function connectWallet() {
         console.log("Please install MetaMask!");
     }
 }
-        
-export async function connectContract(){
-    if(window.ethereum){
+
+export async function connectContract() {
+    if (window.ethereum) {
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         contract = new ethers.Contract(contractAddress, contractABI, signer);
     }
 }
 
-export async function createFundraiser(name) {
-    const tx = await contract.createFundraiser(name, {
-        gasLimit: 1000000
-    });
-    await tx.wait();
-}
-
-export async function donate(fundraiserId, amount) {
-    const tx = await contract.donate(fundraiserId, { value: ethers.utils.parseEther(amount) });
-    await tx.wait();
-}
-
-export async function startQuadraticFunding(fundraiserId) {
-    const tx = await contract.startQuadraticFunding(fundraiserId);
-    await tx.wait();
-}
-
-export async function getFundraisers() {
+export async function deposit(streakGoal, amount) {
     try {
-        const fundraisers = await contract.getFundraisers();
-        console.log("Fundraisers fetched:", fundraisers);
-        return fundraisers;
-    } catch (error) {
-        console.error("Failed to fetch fundraisers:", error);
-        throw error;
-    }
-}
-
-export async function removeFundraiser(fundraiserId) {
-    try {
-        const tx = await contract.removeFundraiser(fundraiserId);
+        const tx = await contract.deposit(streakGoal, {
+            value: ethers.utils.parseEther(amount)
+        });
         await tx.wait();
-        console.log("Fundraiser removed successfully:", tx);
+        console.log("Deposit successful", tx);
     } catch (error) {
-        console.error("Failed to remove fundraiser:", error);
+        console.error("Deposit failed", error);
         throw error;
     }
 }
+
+export async function recordProgress() {
+    try {
+        const tx = await contract.recordProgress();
+        await tx.wait();
+        console.log("Progress recorded", tx);
+    } catch (error) {
+        console.error("Failed to record progress", error);
+        throw error;
+    }
+}
+
+export async function forfeitStreak() {
+    try {
+        const tx = await contract.forfeitStreak();
+        await tx.wait();
+        console.log("Streak forfeited", tx);
+    } catch (error) {
+        console.error("Failed to forfeit streak", error);
+        throw error;
+    }
+}
+
+export async function distributePool(to, amount) {
+    try {
+        const tx = await contract.distributePool(to, ethers.utils.parseEther(amount));
+        await tx.wait();
+        console.log("Pool distributed", tx);
+    } catch (error) {
+        console.error("Failed to distribute pool", error);
+        throw error;
+    }
+}
+
+export async function startConversation(language) {
+	chat = model.startChat();
+	let message = "Only answer in this language for the entire conversation: "+language;
+    await chat.sendMessage(message);
+}
+export async function sendMessage(message){
+	let result = await chat.sendMessage(message);
+	return result.response.text();
+}
+
