@@ -13,7 +13,7 @@ let contract;
 let accounts;
 let chat;
 
-const contractAddress = "Add real address here";
+const contractAddress = "";
 const contractABI = [
     {
         "inputs": [
@@ -160,7 +160,9 @@ export async function deposit(streakGoal, amount) {
 
 export async function recordProgress() {
     try {
-        const tx = await contract.recordProgress();
+        const tx = await contract.recordProgress({
+            gasLimit: 100000,
+          });
         await tx.wait();
         console.log("Progress recorded", tx);
     } catch (error) {
