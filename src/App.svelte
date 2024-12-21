@@ -22,7 +22,7 @@
     let message = '';
     let language = '';
     let result = '';
-    let wordCount = 30;
+    let progress = 0;
     let streak = 0;
     let languageError = false;
     let streakGoalError = false;
@@ -80,12 +80,12 @@
     }
 
     async function handleMessaging(){
-      if(wordCount <= 0){
-        wordCount = 0;
+      if(progress >= 100){
+        progress = 100;
         await handleRecordProgress();
         return;
       }
-      wordCount -= Math.floor(message.length / 5);
+      progress += (Math.floor(message.length / 5) *2);
       result = await sendMessage(message);
       message = "";
     }
@@ -110,11 +110,10 @@
   </script>
   
   <main>
-    <h1>Language Learner</h1>
-  
     {#if walletConnected}  
       {#if startStreak}
       <div class="flex-container start-streak-container">
+        <h1>Start Streak to Earn ETH!</h1>
         {#if !streakGoalError}
         <label>
           Streak Goal (days):
@@ -140,22 +139,23 @@
         <button on:click={handleDeposit} class="ss-button"><h2>Start Streak!</h2></button>
       </div>
       {:else if startLearn}
-        <section>
-          <h2>{wordCount} Words Left!</h2>
-          <div>
-            <p>{result}</p>
+      <h2>Complete Learning to Continue Streak!</h2>
+        <div class="text-box">
+          <progress max="100" value={progress}>{progress}%</progress>
+          <p>{result}</p>
+          <div class="flex-container">
+            <input type="text" name="word" id="word" bind:value={message} placeholder="Type your message">
+            <button on:click={handleMessaging}>Enter</button>
           </div>
-          <input type="text" name="word" id="word" bind:value={message}>
-          <button on:click={()=>{handleMessaging()}}>Enter</button>
-        </section>
+        </div>
       {:else}
+      <img src="./globe.png" alt="globe"> 
       <div class="flex-container">
         {#if streak > 0}
-        <img src="streak.png" alt="Fire">
+        <h1 class="streak">{streak} Day Streak!</h1>
         {:else}
-        <img src="streak-dead.png" alt="Dead Fire">
+        <h1 class="streak">No Active Streak</h1>
         {/if}
-        <h1 class="streak">{streak}</h1>
       </div>
 
       <div class="flex-container">
@@ -166,6 +166,7 @@
       </div>
       {#if !languageError}
       <select bind:value={language} data-placeholder="Language: ">
+        <option value="" disabled selected>Select Language</option>
         <option value="ES">Spanish</option>
         <option value="DE">German</option>
         <option value="FR">French</option>
@@ -241,6 +242,7 @@
       </select>
       {:else}
       <select bind:value={language} class="error" data-placeholder="Language: ">
+        <option value="" disabled selected>Select Language</option>
         <option value="ES">Spanish</option>
         <option value="DE">German</option>
         <option value="FR">French</option>
@@ -323,28 +325,28 @@
   
   <style>
     .start-streak{
-      background: #ff3e3eff;
+      background: #59CE8F;
     }
     .start-streak:hover{
       transition: .2s ease-in;
-      background: #d93838ff;
+      background: #48a875;
     }
     .start-streak-container{
       flex-flow: column wrap;
     }
     .ss-button{
-      background: #ff3e3eff;
+      background: #59CE8F;
     }
     .ss-button:hover{
       transition: .2s ease-in;
-      background: #d93838ff;
+      background: #48a875;
     }
     .continue-streak{
-      background: #346bd0ff;
+      background: #59CE8F;
     }
     .continue-streak:hover{
       transition: .2s ease-in;
-      background: #3165c3ff;
+      background: #48a875;
     }
     .flex-container{
       display: flex;
@@ -352,9 +354,6 @@
     }
     .streak{
       align-self: center;
-    }
-    img{
-      width: 15rem;
     }
     select, input{
       background: none;
@@ -366,7 +365,45 @@
       border-radius: 10px;
     }
     .error{
-      border: 1px solid red;
+      border: 1px solid #FF1E00;
+    }
+    .text-box {
+      background-color: #141414ff;
+      height: 20rem;
+      width: 35rem;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+      flex-shrink: 0;
+    }
+
+    .text-box p {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 0;
+      color: white;
+      font-family: "Roboto Mono", sans-serif;
+      text-align: left;
+    }
+
+    .text-box input{
+      background: #2a2a2aff;
+      color: white;
+    }
+
+    .text-box input,
+    .text-box button {
+      height: 2.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .text-box .flex-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
     }
   </style>
   
