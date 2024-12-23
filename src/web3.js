@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI("AIzaSyChASsVBWmAfZjm3AscwnEmFqrlFWv87NY");
+const genAI = new GoogleGenerativeAI("");
 const model = genAI.getGenerativeModel({ 
 	model: "gemini-1.5-flash",
 	systemInstruction: "Hold a conversation with the user with the intent of language learning. Include translations only for difficult words or phrases. Increase or decrease the complexity of responses based on the user's level of language."
@@ -13,7 +13,7 @@ let contract;
 let accounts;
 let chat;
 
-const contractAddress = "";
+const contractAddress = "0x746c3fe373f110ca19f95ab618955eb7f44b9d6c";
 const contractABI = [
     {
         "inputs": [
@@ -105,28 +105,44 @@ const contractABI = [
         "type": "event"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
                 "internalType": "address",
-                "name": "user",
+                "name": "",
                 "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "forfeitedAmount",
-                "type": "uint256"
             }
         ],
-        "name": "StreakFailed",
-        "type": "event"
-    },
-    {
-        "stateMutability": "payable",
-        "type": "receive"
-    }
+        "name": "users",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "depositAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "streakGoal",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "currentStreak",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "startTime",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "active",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }    
 ];
 
 export async function connectWallet() {
@@ -189,6 +205,30 @@ export async function distributePool(to, amount) {
         console.log("Pool distributed", tx);
     } catch (error) {
         console.error("Failed to distribute pool", error);
+        throw error;
+    }
+}
+
+export async function getUserStreakData() {
+    try {
+        if (!contract) {
+            console.error("Contract is not connected. Please connect the contract first.");
+            return;
+        }
+        // Fetch the user data from the contract
+        const userAddress = await signer.getAddress();
+        const user = await contract.users(userAddress);
+
+        // Extract values from the returned object
+        const depositAmount = ethers.utils.formatEther(user.depositAmount.toString());
+        const streakGoal = user.streakGoal.toNumber();
+        const currentStreak = user.currentStreak.toNumber();
+        const startTime = new Date(user.startTime.toNumber() * 1000).toLocaleString();
+        const active = user.active;
+
+        return { depositAmount, streakGoal, currentStreak, startTime, active };
+    } catch (error) {
+        console.error("Error fetching user streak data:", error);
         throw error;
     }
 }
