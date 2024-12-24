@@ -135,7 +135,7 @@
         <div class="text-box">
           <progress max="100" value={progress}>{progress}%</progress>
           <p>{result}</p>
-          <div class="flex-container row">
+          <div class="flex-container row input-container">
             <input type="text" name="word" id="word" bind:value={message} placeholder="Type your message">
             <button on:click={handleMessaging}>Enter</button>
           </div>
@@ -149,7 +149,10 @@
         {#if streakData.streakGoal <= 0}
         <button on:click={() => startStreak = true} class="start-streak">Start Streak</button>
         {/if}
-        <button class="continue-streak" on:click={learn}>Continue Streak</button>
+        <div class="button-container">
+          <button class="continue-streak" on:click={learn}>Continue Streak</button>
+          <button class="end-streak" on:click={handleForfeitStreak}>Forfeit Streak</button>
+        </div>
         <select class="{languageError ? 'error' : ''}" bind:value={language}>
           <option value="" disabled selected>Select Language</option>
         <option value="ES">Spanish</option>
@@ -276,6 +279,14 @@
       background: #48a875;
       transition: 0.2s ease-in;
     }
+
+    .button-container {
+      display: flex; /* Align items horizontally */
+      justify-content: center; /* Center buttons horizontally within the container */
+      align-items: center; /* Align buttons vertically */
+      gap: 10px; /* Add spacing between the buttons */
+      margin-top: 20px; /* Optional: Add spacing above the buttons */
+    }
   
     input, select {
       border: 1px solid #ccc;
@@ -293,15 +304,25 @@
       flex-direction: column;
       gap: 1rem;
       background-color: #141414;
-      padding: 1rem;
+      padding: 2rem;
       border-radius: 10px;
+      text-align: left;
       color: white;
+      width: 40rem;
+      height: 25rem; /* Set a fixed height */
+      overflow-y: auto; /* Enable vertical scrolling */
+      overflow-x: hidden; /* Prevent horizontal scrolling */
+    }
+
+    .input-container {
+      margin-top: auto; /* Pushes this container to the bottom of .text-box */
+      display: flex;
+      gap: 0.5rem; /* Space between input and button */
     }
   
     progress {
       width: 100%;
       height: 1rem;
-      margin-bottom: 1rem;
     }
   
     .streak-container {
@@ -316,6 +337,10 @@
   
     .streak-goal {
       margin: 0;
+    }
+
+    button.end-streak {
+      background-color: #FF1E00; /* Red for Forfeit */
     }
   </style>
   

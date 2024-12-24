@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI("");
+const genAI = new GoogleGenerativeAI("AIzaSyChASsVBWmAfZjm3AscwnEmFqrlFWv87NY");
 const model = genAI.getGenerativeModel({ 
 	model: "gemini-1.5-flash",
-	systemInstruction: "Hold a conversation with the user with the intent of language learning. Include translations only for difficult words or phrases. Increase or decrease the complexity of responses based on the user's level of language."
+	systemInstruction: "Hold a conversation with the user with the intent of language learning. Include translations for difficult words or phrases. Increase or decrease the complexity of responses based on the user's level of language."
  });
 
 let provider;
@@ -13,7 +13,7 @@ let contract;
 let accounts;
 let chat;
 
-const contractAddress = "0x746c3fe373f110ca19f95ab618955eb7f44b9d6c";
+const contractAddress = "";
 const contractABI = [
     {
         "inputs": [
@@ -189,7 +189,9 @@ export async function recordProgress() {
 
 export async function forfeitStreak() {
     try {
-        const tx = await contract.forfeitStreak();
+        const tx = await contract.forfeitStreak({
+            gasLimit: 999999
+          });
         await tx.wait();
         console.log("Streak forfeited", tx);
     } catch (error) {
